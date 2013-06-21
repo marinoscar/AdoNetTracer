@@ -143,7 +143,10 @@ namespace AdoNetTracer
 
         private static DbProviderFactory GetProviderFactory(DbConnection connection)
         {
-            return DbProviderFactories.GetFactory(connection);
+            var factory = DbProviderFactories.GetFactory(connection);
+            var traceFactory = typeof (DbTraceProviderFactory<>).MakeGenericType(factory.GetType());
+            Activator.CreateInstance(traceFactory);
+            return Activator.CreateInstance(traceFactory) as DbProviderFactory;
         } 
 
         #endregion

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>AdoNetTracer</id>
+    <version>0.1.0</version>
+    <authors>oscar_marin</authors>
+    <owners>oscar_marin</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/marinoscar/AdoNetTracer</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Provides a utility to trace the activity in ADO.NET</description>
+    <releaseNotes>Initial release</releaseNotes>
+    <copyright>Copyright 2013</copyright>
+  </metadata>
+</package>
