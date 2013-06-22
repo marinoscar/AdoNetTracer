@@ -14,34 +14,52 @@ namespace AdoNetTracer
         #region Properties
 
         /// <summary>
+        /// The session id for the event
+        /// </summary>
+        public Guid SessionId { get; internal set; }
+
+        /// <summary>
         /// Start time of the event
         /// </summary>
-        public DateTime StartTime { get; private set; }
+        public DateTime StartTime { get; internal set; }
         /// <summary>
         /// Command of the operation
         /// </summary>
-        public string Command { get; private set; }
+        public string Command { get; internal set; }
         /// <summary>
         /// Duration of the operation
         /// </summary>
-        public TimeSpan Duration { get; private set; }
-
+        public TimeSpan Duration { get; internal set; }
+        /// <summary>
+        /// The type of operation being executed
+        /// </summary>
         public DbTraceOperationType OperationType { get; private set; }
 
         #endregion
 
-        private DbTraceEvent(Stopwatch start, string commandText, DbTraceOperationType operationType)
+        internal DbTraceEvent()
+        {
+            StartTime = DateTime.Now;
+            Duration = new TimeSpan(0);
+            Command = string.Empty;
+            OperationType = DbTraceOperationType.None;
+            SessionId = Guid.Empty;
+            _stopwatch = null;
+        }
+
+        private DbTraceEvent(Stopwatch start, string commandText, DbTraceOperationType operationType, Guid sessionId)
         {
             StartTime = DateTime.Now;
             Duration = new TimeSpan(0);
             Command = commandText;
             OperationType = operationType;
+            SessionId = sessionId;
             _stopwatch = start;
         }
 
-        public static DbTraceEvent Start(string commandText, DbTraceOperationType operationType)
+        public static DbTraceEvent Start(Guid sessionId, string commandText, DbTraceOperationType operationType)
         {
-            return new DbTraceEvent(Stopwatch.StartNew(), commandText, operationType);
+            return new DbTraceEvent(Stopwatch.StartNew(), commandText, operationType, sessionId);
         }
 
         public DbTraceEvent Stop()

@@ -11,19 +11,17 @@ using Newtonsoft.Json;
 
 namespace AdoNetTracer
 {
-    public class DbTraceListener : TraceListener 
+    public class DbTraceEvents 
     {
 
         #region Constructors
         
-        public DbTraceListener()
+        public DbTraceEvents()
         {
             Events = new List<DbTraceEvent>();
             _configuration = GetConfigurationSection();
             if(_configuration.DefaultTraceEventFormat == DbTraceEventFormat.Json)
                 _jsonSerializer = new JsonSerializer();
-            if(_configuration.DefaultTraceEventFormat == DbTraceEventFormat.Xml)
-                _xmlSerializer = new XmlSerializer(typeof(DbTraceEvent));
         } 
 
         #endregion
@@ -31,74 +29,36 @@ namespace AdoNetTracer
         #region Variable Declaration
         
         private readonly DbTraceConfiguration _configuration;
-        private readonly XmlSerializer _xmlSerializer;
         private readonly JsonSerializer _jsonSerializer;
-        private static DbTraceListener _instance;
+        private static DbTraceEvents _instance;
 
         #endregion
 
         #region Property Implementation
         
         public List<DbTraceEvent> Events { get; set; } 
-        public static DbTraceListener Instance
+        public static DbTraceEvents Instance
         {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new DbTraceListener();
-                }
-                return _instance;
-            }
+            get { return _instance ?? (_instance = new DbTraceEvents()); }
         }
-
-        #endregion
-
-        #region Overriden Methods
-
-        public void TraceData(DbTraceEvent item)
-        {
-            Events.Add(item);
-            WriteLine(SerializeEntry(item));
-        }
-
-        public override void TraceData(TraceEventCache eventCache, string source, TraceEventType eventType, int id, object data)
-        {
-            if (data is DbTraceEvent)
-            {
-                Events.Add(data as DbTraceEvent);
-                WriteLine(SerializeEntry(data));
-            }
-            else
-            {
-                WriteLine(data.ToString());
-            }
-        }
-
-        public override void Write(string message)
-        {
-            Debug.Write(message);
-        }
-
-        public override void WriteLine(string message)
-        {
-            Debug.WriteLine(message);
-        } 
 
         #endregion
 
         #region Methods
 
-        private string SerializeEntry(object item)
+        public void TraceEvent(DbTraceEvent item)
+        {
+            Events.Add(item);
+            Trace.WriteLine(SerializeEntry(item));
+        }
+
+        public string SerializeEntry(object item)
         {
             var stream = new StringWriter();
             switch (_configuration.DefaultTraceEventFormat)
             {
                 case DbTraceEventFormat.Json:
                     _jsonSerializer.Serialize(stream, item);
-                    break;
-                case DbTraceEventFormat.Xml:
-                    _xmlSerializer.Serialize(stream, item);
                     break;
                 default:
                     stream.WriteLine(item);
@@ -109,13 +69,14 @@ namespace AdoNetTracer
 
         private DbTraceConfiguration GetConfigurationSection()
         {
-            var configSection = ConfigurationManager.GetSection("dbTraceConfiguration");
+            var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var configSection = configuration.GetSection("dbTraceConfiguration") as DbTraceConfiguration;
             if (configSection == null)
             {
                 var newSection = new DbTraceConfiguration() { DefaultTraceEventFormat = DbTraceEventFormat.Text };
                 return newSection;
             }
-            return configSection as DbTraceConfiguration;
+            return configSection;
         } 
 
         #endregion

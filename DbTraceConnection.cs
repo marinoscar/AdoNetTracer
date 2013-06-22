@@ -22,9 +22,15 @@ namespace AdoNetTracer
         }
 
         public DbTraceConnection(DbConnection connection, DbProviderFactory providerFactory)
+            :this(connection,providerFactory, Guid.NewGuid())
+        {
+        }
+
+        public DbTraceConnection(DbConnection connection, DbProviderFactory providerFactory, Guid sessionId)
         {
             InternalConnection = connection;
             InternalProviderFactory = providerFactory;
+            SessionId = sessionId;
         }
 
         #endregion
@@ -33,9 +39,11 @@ namespace AdoNetTracer
 
         protected DbProviderFactory InternalProviderFactory { get; private set; }
         protected DbConnection InternalConnection { get; set; }
-        public DbTraceListener Tracer
+        public Guid SessionId { get; private set; }
+
+        public DbTraceEvents DbTraceEvents
         {
-            get { return DbTraceListener.Instance; }
+            get { return DbTraceEvents.Instance; }
         }
 
         #endregion
@@ -90,17 +98,17 @@ namespace AdoNetTracer
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
         {
-            var dbEvent = DbTraceEvent.Start("Begin transaction...", DbTraceOperationType.BeginTransaction);
+            var dbEvent = DbTraceEvent.Start(SessionId, "Begin transaction...", DbTraceOperationType.BeginTransaction);
             var result = InternalConnection.BeginTransaction(isolationLevel);
-            Tracer.TraceData(dbEvent.Stop());
+            DbTraceEvents.TraceEvent(dbEvent.Stop());
             return result;
         }
 
         public override void Close()
         {
-            var dbEvent = DbTraceEvent.Start("Closing connection...", DbTraceOperationType.CloseConnection);
+            var dbEvent = DbTraceEvent.Start(SessionId, "Closing connection...", DbTraceOperationType.CloseConnection);
             InternalConnection.Close();
-            Tracer.TraceData(dbEvent.Stop());
+            DbTraceEvents.TraceEvent(dbEvent.Stop());
         }
 
         public override void ChangeDatabase(string databaseName)
@@ -110,9 +118,9 @@ namespace AdoNetTracer
 
         public override void Open()
         {
-            var dbEvent = DbTraceEvent.Start("Opening connection...", DbTraceOperationType.OpenConnection);
+            var dbEvent = DbTraceEvent.Start(SessionId, "Opening connection...", DbTraceOperationType.OpenConnection);
             InternalConnection.Open();
-            Tracer.TraceData(dbEvent.Stop());
+            DbTraceEvents.TraceEvent(dbEvent.Stop());
         }
 
         protected override DbCommand CreateDbCommand()

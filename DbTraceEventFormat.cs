@@ -8,6 +8,6 @@ namespace AdoNetTracer
 {
     public enum DbTraceEventFormat
     {
-        Text, Json, Xml
+        Text, Json
     }
 }

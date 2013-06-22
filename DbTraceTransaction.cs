@@ -13,20 +13,30 @@ namespace AdoNetTracer
 
         #region Constructors
 
-        public DbTraceTransaction(DbTransaction transaction)
+        public DbTraceTransaction(DbTransaction transaction) : this(transaction, TryGetSessionIdFromTransaction(transaction))
+        {
+        }
+
+
+        public DbTraceTransaction(DbTransaction transaction, Guid sessionId)
         {
             InternalTransaction = transaction;
+            SessionId = sessionId;
         } 
+
+
 
         #endregion
 
         #region Propertpy Implementation
         
         protected DbTransaction InternalTransaction { get; private set; }
-        public DbTraceListener Tracer
+        public DbTraceEvents DbTraceEvents
         {
-            get { return DbTraceListener.Instance; }
+            get { return DbTraceEvents.Instance; }
         }
+
+        public Guid SessionId { get; private set; }
 
         #endregion
 
@@ -34,16 +44,16 @@ namespace AdoNetTracer
         
         public override void Commit()
         {
-            var dbEvent = DbTraceEvent.Start("Commiting transaction", DbTraceOperationType.CommitTransaction);
+            var dbEvent = DbTraceEvent.Start(SessionId, "Commiting transaction", DbTraceOperationType.CommitTransaction);
             InternalTransaction.Commit();
-            Tracer.TraceData(dbEvent.Stop());
+            DbTraceEvents.TraceEvent(dbEvent.Stop());
         }
 
         public override void Rollback()
         {
-            var dbEvent = DbTraceEvent.Start("Rolling back transaction", DbTraceOperationType.RollbackTransaction);
+            var dbEvent = DbTraceEvent.Start(SessionId, "Rolling back transaction", DbTraceOperationType.RollbackTransaction);
             InternalTransaction.Rollback();
-            Tracer.TraceData(dbEvent.Stop());
+            DbTraceEvents.TraceEvent(dbEvent.Stop());
         } 
 
         #endregion
@@ -59,6 +69,18 @@ namespace AdoNetTracer
         {
             get { return InternalTransaction.IsolationLevel; }
         } 
+
+        #endregion
+
+        #region Method Implementation
+
+        private static Guid TryGetSessionIdFromTransaction(DbTransaction transaction)
+        {
+            if (transaction != null && transaction.Connection != null &&
+                transaction is DbTraceTransaction && transaction.Connection is DbTraceConnection)
+                return ((DbTraceConnection)transaction.Connection).SessionId;
+            return Guid.NewGuid();
+        }
 
         #endregion
     }

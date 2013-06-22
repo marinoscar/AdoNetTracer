@@ -8,6 +8,7 @@ namespace AdoNetTracer
 {
     public interface IDbTracer
     {
-        DbTraceListener Tracer { get; }
+        DbTraceEvents DbTraceEvents { get; }
+        Guid SessionId { get; }
     }
 }

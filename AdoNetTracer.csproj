@@ -53,7 +53,7 @@
     </Compile>
     <Compile Include="DbTraceEvent.cs" />
     <Compile Include="DbTraceEventFormat.cs" />
-    <Compile Include="DbTraceListener.cs" />
+    <Compile Include="DbTraceEvents.cs" />
     <Compile Include="DbTraceOperationType.cs" />
     <Compile Include="DbTraceProviderFactory.cs" />
     <Compile Include="DbTraceTransaction.cs" />

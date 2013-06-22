@@ -14,8 +14,14 @@ namespace AdoNetTracer
         #region Constructors
 
         public DbTraceCommand(DbCommand command)
+            : this(command, TryGetSessionIdFromCommand(command))
+        {
+        }
+
+        public DbTraceCommand(DbCommand command, Guid sessionId)
         {
             InternalCommand = command;
+            SessionId = sessionId;
         }
 
         #endregion
@@ -23,9 +29,11 @@ namespace AdoNetTracer
         #region Properties
 
         protected DbCommand InternalCommand { get; private set; }
-        public DbTraceListener Tracer
+        public Guid SessionId { get; private set; }
+
+        public DbTraceEvents DbTraceEvents
         {
-            get { return DbTraceListener.Instance; }
+            get { return DbTraceEvents.Instance; }
         }
 
         #endregion
@@ -97,27 +105,39 @@ namespace AdoNetTracer
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
-            var dbEvent = DbTraceEvent.Start(CommandText, DbTraceOperationType.ExecuteQuery);
+            var dbEvent = DbTraceEvent.Start(SessionId, CommandText, DbTraceOperationType.ExecuteQuery);
             var result = InternalCommand.ExecuteReader(behavior);
-            Tracer.TraceData(dbEvent.Stop());
+            DbTraceEvents.TraceEvent(dbEvent.Stop());
             return result;
         }
 
         public override int ExecuteNonQuery()
         {
-            var dbEvent = DbTraceEvent.Start(CommandText, DbTraceOperationType.ExecuteQuery);
+            var dbEvent = DbTraceEvent.Start(SessionId, CommandText, DbTraceOperationType.ExecuteQuery);
             var result = InternalCommand.ExecuteNonQuery();
-            Tracer.TraceData(dbEvent.Stop());
+            DbTraceEvents.TraceEvent(dbEvent.Stop());
             return result;
         }
 
         public override object ExecuteScalar()
         {
-            var dbEvent = DbTraceEvent.Start(CommandText, DbTraceOperationType.ExecuteQuery);
+            var dbEvent = DbTraceEvent.Start(SessionId, CommandText, DbTraceOperationType.ExecuteQuery);
             var result = InternalCommand.ExecuteScalar();
-            Tracer.TraceData(dbEvent.Stop());
+            DbTraceEvents.TraceEvent(dbEvent.Stop());
             return result;
         }
+
+        #endregion
+
+        #region Method Implementation
+        
+        private static Guid TryGetSessionIdFromCommand(DbCommand command)
+        {
+            if (command != null && command.Connection != null &&
+                command is DbTraceCommand && command.Connection is DbTraceConnection)
+                return ((DbTraceConnection)command.Connection).SessionId;
+            return Guid.NewGuid();
+        } 
 
         #endregion
     }
