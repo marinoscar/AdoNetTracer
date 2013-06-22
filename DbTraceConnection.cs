@@ -11,7 +11,7 @@ using IsolationLevel = System.Data.IsolationLevel;
 
 namespace AdoNetTracer
 {
-    public class DbTraceConnection : DbConnection
+    public class DbTraceConnection : DbConnection, IDbTracer
     {
         #region Constructors
 
@@ -33,7 +33,7 @@ namespace AdoNetTracer
 
         protected DbProviderFactory InternalProviderFactory { get; private set; }
         protected DbConnection InternalConnection { get; set; }
-        protected DbTraceListener Trace
+        public DbTraceListener Tracer
         {
             get { return DbTraceListener.Instance; }
         }
@@ -92,7 +92,7 @@ namespace AdoNetTracer
         {
             var dbEvent = DbTraceEvent.Start("Begin transaction...", DbTraceOperationType.BeginTransaction);
             var result = InternalConnection.BeginTransaction(isolationLevel);
-            Trace.TraceData(dbEvent.Stop());
+            Tracer.TraceData(dbEvent.Stop());
             return result;
         }
 
@@ -100,7 +100,7 @@ namespace AdoNetTracer
         {
             var dbEvent = DbTraceEvent.Start("Closing connection...", DbTraceOperationType.CloseConnection);
             InternalConnection.Close();
-            Trace.TraceData(dbEvent.Stop());
+            Tracer.TraceData(dbEvent.Stop());
         }
 
         public override void ChangeDatabase(string databaseName)
@@ -112,7 +112,7 @@ namespace AdoNetTracer
         {
             var dbEvent = DbTraceEvent.Start("Opening connection...", DbTraceOperationType.OpenConnection);
             InternalConnection.Open();
-            Trace.TraceData(dbEvent.Stop());
+            Tracer.TraceData(dbEvent.Stop());
         }
 
         protected override DbCommand CreateDbCommand()

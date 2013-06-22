@@ -13,7 +13,7 @@ namespace AdoNetTracer
         [ConfigurationProperty("defaultTraceEventFormat", DefaultValue = "Text")]
         public DbTraceEventFormat DefaultTraceEventFormat
         {
-            get { return (DbTraceEventFormat)Enum.Parse(typeof(DbTraceConfiguration), Convert.ToString(this["defaultTraceEventFormat"])); }
+            get { return (DbTraceEventFormat)Enum.Parse(typeof(DbTraceEventFormat), Convert.ToString(this["defaultTraceEventFormat"])); }
             set { this["defaultTraceEventFormat"] = Convert.ToString(value); }
         }
     }

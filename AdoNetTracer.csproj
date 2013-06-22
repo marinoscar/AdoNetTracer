@@ -57,6 +57,7 @@
     <Compile Include="DbTraceOperationType.cs" />
     <Compile Include="DbTraceProviderFactory.cs" />
     <Compile Include="DbTraceTransaction.cs" />
+    <Compile Include="IDbTracer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

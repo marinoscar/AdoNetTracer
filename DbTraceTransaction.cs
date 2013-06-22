@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AdoNetTracer
 {
-    public class DbTraceTransaction : DbTransaction 
+    public class DbTraceTransaction : DbTransaction, IDbTracer
     {
 
         #region Constructors
@@ -23,7 +23,7 @@ namespace AdoNetTracer
         #region Propertpy Implementation
         
         protected DbTransaction InternalTransaction { get; private set; }
-        protected DbTraceListener Trace
+        public DbTraceListener Tracer
         {
             get { return DbTraceListener.Instance; }
         }
@@ -36,14 +36,14 @@ namespace AdoNetTracer
         {
             var dbEvent = DbTraceEvent.Start("Commiting transaction", DbTraceOperationType.CommitTransaction);
             InternalTransaction.Commit();
-            Trace.TraceData(dbEvent.Stop());
+            Tracer.TraceData(dbEvent.Stop());
         }
 
         public override void Rollback()
         {
             var dbEvent = DbTraceEvent.Start("Rolling back transaction", DbTraceOperationType.RollbackTransaction);
             InternalTransaction.Rollback();
-            Trace.TraceData(dbEvent.Stop());
+            Tracer.TraceData(dbEvent.Stop());
         } 
 
         #endregion

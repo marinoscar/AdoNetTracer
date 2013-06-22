@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AdoNetTracer
 {
-    public class DbTraceCommand : DbCommand
+    public class DbTraceCommand : DbCommand, IDbTracer
     {
 
         #region Constructors
@@ -23,7 +23,7 @@ namespace AdoNetTracer
         #region Properties
 
         protected DbCommand InternalCommand { get; private set; }
-        protected DbTraceListener Trace
+        public DbTraceListener Tracer
         {
             get { return DbTraceListener.Instance; }
         }
@@ -99,7 +99,7 @@ namespace AdoNetTracer
         {
             var dbEvent = DbTraceEvent.Start(CommandText, DbTraceOperationType.ExecuteQuery);
             var result = InternalCommand.ExecuteReader(behavior);
-            Trace.TraceData(dbEvent.Stop());
+            Tracer.TraceData(dbEvent.Stop());
             return result;
         }
 
@@ -107,7 +107,7 @@ namespace AdoNetTracer
         {
             var dbEvent = DbTraceEvent.Start(CommandText, DbTraceOperationType.ExecuteQuery);
             var result = InternalCommand.ExecuteNonQuery();
-            Trace.TraceData(dbEvent.Stop());
+            Tracer.TraceData(dbEvent.Stop());
             return result;
         }
 
@@ -115,7 +115,7 @@ namespace AdoNetTracer
         {
             var dbEvent = DbTraceEvent.Start(CommandText, DbTraceOperationType.ExecuteQuery);
             var result = InternalCommand.ExecuteScalar();
-            Trace.TraceData(dbEvent.Stop());
+            Tracer.TraceData(dbEvent.Stop());
             return result;
         }
 

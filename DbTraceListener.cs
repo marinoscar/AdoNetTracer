@@ -47,7 +47,6 @@ namespace AdoNetTracer
                 if (_instance == null)
                 {
                     _instance = new DbTraceListener();
-                    Trace.Listeners.Add(_instance);
                 }
                 return _instance;
             }
@@ -78,12 +77,12 @@ namespace AdoNetTracer
 
         public override void Write(string message)
         {
-            Trace.Write(message);
+            Debug.Write(message);
         }
 
         public override void WriteLine(string message)
         {
-            Trace.WriteLine(message);
+            Debug.WriteLine(message);
         } 
 
         #endregion

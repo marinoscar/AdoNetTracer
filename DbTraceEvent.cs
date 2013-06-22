@@ -53,7 +53,7 @@ namespace AdoNetTracer
 
         public override string ToString()
         {
-            return string.Format("Started On: [{0}] Duration: [{1}]\nMessage: {2}", StartTime, Command, Duration);
+            return string.Format("Started On: [{0}] Duration: [{1}]\nMessage: {2}", StartTime, Duration, Command);
         }
     }
 }
