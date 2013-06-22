@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlServerCe;
+using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using AdoNetTracer;

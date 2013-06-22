@@ -20,7 +20,15 @@ namespace AdoNetTracer
 
         #endregion
 
+        #region Properties
+
         protected DbCommand InternalCommand { get; private set; }
+        protected DbTraceListener Trace
+        {
+            get { return DbTraceListener.Instance; }
+        }
+
+        #endregion
 
         #region Overriden Properties
 
@@ -69,6 +77,7 @@ namespace AdoNetTracer
 
 
         #endregion
+
         #region Overridden Methods
 
         public override void Prepare()
@@ -88,17 +97,26 @@ namespace AdoNetTracer
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
-            return InternalCommand.ExecuteReader(behavior);
+            var dbEvent = DbTraceEvent.Start(CommandText, DbTraceOperationType.ExecuteQuery);
+            var result = InternalCommand.ExecuteReader(behavior);
+            Trace.TraceData(dbEvent.Stop());
+            return result;
         }
 
         public override int ExecuteNonQuery()
         {
-            return InternalCommand.ExecuteNonQuery();
+            var dbEvent = DbTraceEvent.Start(CommandText, DbTraceOperationType.ExecuteQuery);
+            var result = InternalCommand.ExecuteNonQuery();
+            Trace.TraceData(dbEvent.Stop());
+            return result;
         }
 
         public override object ExecuteScalar()
         {
-            return InternalCommand.ExecuteScalar();
+            var dbEvent = DbTraceEvent.Start(CommandText, DbTraceOperationType.ExecuteQuery);
+            var result = InternalCommand.ExecuteScalar();
+            Trace.TraceData(dbEvent.Stop());
+            return result;
         }
 
         #endregion

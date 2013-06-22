@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,11 +15,12 @@ namespace AdoNetTracer
     {
         #region Constructors
 
-        public DbTraceConnection(DbConnection connection): this(connection, GetProviderFactory(connection))
+        public DbTraceConnection(DbConnection connection)
+            : this(connection, GetProviderFactory(connection))
         {
-            
+
         }
-        
+
         public DbTraceConnection(DbConnection connection, DbProviderFactory providerFactory)
         {
             InternalConnection = connection;
@@ -31,11 +33,15 @@ namespace AdoNetTracer
 
         protected DbProviderFactory InternalProviderFactory { get; private set; }
         protected DbConnection InternalConnection { get; set; }
+        protected DbTraceListener Trace
+        {
+            get { return DbTraceListener.Instance; }
+        }
 
         #endregion
 
         #region Overriden Properties
-        
+
         public override System.ComponentModel.ISite Site
         {
             get { return InternalConnection.Site; }
@@ -84,12 +90,17 @@ namespace AdoNetTracer
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
         {
-            return InternalConnection.BeginTransaction(isolationLevel);
+            var dbEvent = DbTraceEvent.Start("Begin transaction...", DbTraceOperationType.BeginTransaction);
+            var result = InternalConnection.BeginTransaction(isolationLevel);
+            Trace.TraceData(dbEvent.Stop());
+            return result;
         }
 
         public override void Close()
         {
+            var dbEvent = DbTraceEvent.Start("Closing connection...", DbTraceOperationType.CloseConnection);
             InternalConnection.Close();
+            Trace.TraceData(dbEvent.Stop());
         }
 
         public override void ChangeDatabase(string databaseName)
@@ -99,7 +110,9 @@ namespace AdoNetTracer
 
         public override void Open()
         {
+            var dbEvent = DbTraceEvent.Start("Opening connection...", DbTraceOperationType.OpenConnection);
             InternalConnection.Open();
+            Trace.TraceData(dbEvent.Stop());
         }
 
         protected override DbCommand CreateDbCommand()
@@ -144,10 +157,10 @@ namespace AdoNetTracer
         private static DbProviderFactory GetProviderFactory(DbConnection connection)
         {
             var factory = DbProviderFactories.GetFactory(connection);
-            var traceFactory = typeof (DbTraceProviderFactory<>).MakeGenericType(factory.GetType());
+            var traceFactory = typeof(DbTraceProviderFactory<>).MakeGenericType(factory.GetType());
             Activator.CreateInstance(traceFactory);
             return Activator.CreateInstance(traceFactory) as DbProviderFactory;
-        } 
+        }
 
         #endregion
     }

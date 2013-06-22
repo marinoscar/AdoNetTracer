@@ -30,7 +30,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
@@ -43,11 +47,20 @@
     <Compile Include="DbTraceCommand.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="DbTraceConfiguration.cs" />
     <Compile Include="DbTraceConnection.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="DbTraceEvent.cs" />
+    <Compile Include="DbTraceEventFormat.cs" />
+    <Compile Include="DbTraceListener.cs" />
+    <Compile Include="DbTraceOperationType.cs" />
     <Compile Include="DbTraceProviderFactory.cs" />
+    <Compile Include="DbTraceTransaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
