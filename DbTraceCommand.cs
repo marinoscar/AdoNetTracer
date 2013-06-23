@@ -29,6 +29,8 @@ namespace AdoNetTracer
         #region Properties
 
         protected DbCommand InternalCommand { get; private set; }
+        internal DbTraceConnection InternalConnection { get; set; }
+
         public Guid SessionId { get; private set; }
 
         public DbTraceEvents DbTraceEvents
@@ -63,7 +65,19 @@ namespace AdoNetTracer
         protected override DbConnection DbConnection
         {
             get { return InternalCommand.Connection; }
-            set { InternalCommand.Connection = value; }
+            set
+            {
+                InternalConnection = value as DbTraceConnection;
+                if (InternalConnection != null)
+                {
+                    InternalCommand.Connection = InternalConnection.InternalConnection;
+                }
+                else
+                {
+                    InternalConnection = new DbTraceConnection(value);
+                    InternalCommand.Connection = InternalConnection.InternalConnection;
+                }
+            }
         }
 
         protected override DbParameterCollection DbParameterCollection
@@ -74,8 +88,15 @@ namespace AdoNetTracer
 
         protected override DbTransaction DbTransaction
         {
-            get { return InternalCommand.Transaction; }
-            set { InternalCommand.Transaction = value; }
+            get
+            {
+                return InternalCommand.Transaction == null ? null : new DbTraceTransaction(InternalCommand.Transaction);
+            }
+            set
+            {
+                var transaction = value as DbTraceTransaction;
+                InternalCommand.Transaction = (transaction != null) ? transaction.InternalTransaction : value;
+            }
         }
         public override bool DesignTimeVisible
         {
@@ -105,6 +126,7 @@ namespace AdoNetTracer
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
+            throw new Exception("ExecuteDbDataReader");
             var dbEvent = DbTraceEvent.Start(SessionId, CommandText, DbTraceOperationType.ExecuteQuery);
             var result = InternalCommand.ExecuteReader(behavior);
             DbTraceEvents.TraceEvent(dbEvent.Stop());
@@ -113,6 +135,7 @@ namespace AdoNetTracer
 
         public override int ExecuteNonQuery()
         {
+            throw new Exception("ExecuteNonQuery");
             var dbEvent = DbTraceEvent.Start(SessionId, CommandText, DbTraceOperationType.ExecuteQuery);
             var result = InternalCommand.ExecuteNonQuery();
             DbTraceEvents.TraceEvent(dbEvent.Stop());
@@ -121,6 +144,7 @@ namespace AdoNetTracer
 
         public override object ExecuteScalar()
         {
+            throw new Exception("ExecuteScalar");
             var dbEvent = DbTraceEvent.Start(SessionId, CommandText, DbTraceOperationType.ExecuteQuery);
             var result = InternalCommand.ExecuteScalar();
             DbTraceEvents.TraceEvent(dbEvent.Stop());
@@ -130,14 +154,14 @@ namespace AdoNetTracer
         #endregion
 
         #region Method Implementation
-        
+
         private static Guid TryGetSessionIdFromCommand(DbCommand command)
         {
             if (command != null && command.Connection != null &&
                 command is DbTraceCommand && command.Connection is DbTraceConnection)
                 return ((DbTraceConnection)command.Connection).SessionId;
             return Guid.NewGuid();
-        } 
+        }
 
         #endregion
     }

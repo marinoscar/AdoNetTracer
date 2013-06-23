@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -35,10 +36,16 @@ namespace AdoNetTracer
 
         #endregion
 
+        #region Variable Declaration
+        
+        private bool _isFactoryWrapped; 
+
+        #endregion
+
         #region Property Implementation
 
         protected DbProviderFactory InternalProviderFactory { get; private set; }
-        protected DbConnection InternalConnection { get; set; }
+        internal DbConnection InternalConnection { get; set; }
         public Guid SessionId { get; private set; }
 
         public DbTraceEvents DbTraceEvents
@@ -89,7 +96,11 @@ namespace AdoNetTracer
 
         protected override DbProviderFactory DbProviderFactory
         {
-            get { return InternalProviderFactory; }
+            get
+            {
+                WrapProviders();
+                return InternalProviderFactory;
+            }
         }
 
         #endregion
@@ -161,6 +172,59 @@ namespace AdoNetTracer
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Wraps the existing providers with the AdoTraceProviders
+        /// </summary>
+        private void WrapProviders()
+        {
+            if (_isFactoryWrapped) return;
+            try
+            {
+                DbProviderFactories.GetFactory("Anything");
+            }
+            catch (ArgumentException)
+            {
+            }
+            var registeredProviders = GetRegisteredProviders();
+            foreach (var row in registeredProviders.Rows.Cast<DataRow>().ToList())
+            {
+                DbProviderFactory factory = null;
+                try
+                {
+                    factory = DbProviderFactories.GetFactory(row);
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+
+                if (factory is DbTraceProviderFactory)
+                {
+                    continue;
+                }
+
+                var proxyType = typeof(DbTraceProviderFactory<>).MakeGenericType(factory.GetType());
+
+                var newRow = registeredProviders.NewRow();
+                newRow["Name"] = row["Name"];
+                newRow["Description"] = row["Description"];
+                newRow["InvariantName"] = row["InvariantName"];
+                newRow["AssemblyQualifiedName"] = proxyType.AssemblyQualifiedName;
+
+                registeredProviders.Rows.Remove(row);
+                registeredProviders.Rows.Add(newRow);
+            }
+            _isFactoryWrapped = true;
+        }
+
+        public DataTable GetRegisteredProviders()
+        {
+            var dbProviderFactories = typeof(DbProviderFactories);
+            var providerField = dbProviderFactories.GetField("_configTable", BindingFlags.NonPublic | BindingFlags.Static) ?? dbProviderFactories.GetField("_providerTable", BindingFlags.NonPublic | BindingFlags.Static);
+            var registrations = providerField.GetValue(null);
+            return registrations is DataSet ? ((DataSet)registrations).Tables["DbProviderFactories"] : (DataTable)registrations;
+        }
 
         private static DbProviderFactory GetProviderFactory(DbConnection connection)
         {

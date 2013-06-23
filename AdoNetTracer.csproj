@@ -36,6 +36,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -47,6 +48,7 @@
     <Compile Include="DbTraceCommand.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="DbTraceCommandDefinition.cs" />
     <Compile Include="DbTraceConfiguration.cs" />
     <Compile Include="DbTraceConnection.cs">
       <SubType>Component</SubType>
@@ -56,6 +58,7 @@
     <Compile Include="DbTraceEvents.cs" />
     <Compile Include="DbTraceOperationType.cs" />
     <Compile Include="DbTraceProviderFactory.cs" />
+    <Compile Include="DbTraceProviderServices.cs" />
     <Compile Include="DbTraceTransaction.cs" />
     <Compile Include="IDbTracer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

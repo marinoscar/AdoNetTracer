@@ -30,7 +30,7 @@ namespace AdoNetTracer
 
         #region Propertpy Implementation
         
-        protected DbTransaction InternalTransaction { get; private set; }
+        internal DbTransaction InternalTransaction { get; private set; }
         public DbTraceEvents DbTraceEvents
         {
             get { return DbTraceEvents.Instance; }
