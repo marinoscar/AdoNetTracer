@@ -28,7 +28,7 @@ namespace AdoNetTracer
 
         #region Variable Declaration
         
-        private readonly DbTraceConfiguration _configuration;
+        private readonly DbTraceConfigurationSection _configuration;
         private readonly JsonSerializer _jsonSerializer;
         private static DbTraceEvents _instance;
 
@@ -67,13 +67,13 @@ namespace AdoNetTracer
             return stream.ToString();
         }
 
-        private DbTraceConfiguration GetConfigurationSection()
+        private DbTraceConfigurationSection GetConfigurationSection()
         {
             var configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            var configSection = configuration.GetSection("dbTraceConfiguration") as DbTraceConfiguration;
+            var configSection = configuration.GetSection("dbTraceConfiguration") as DbTraceConfigurationSection;
             if (configSection == null)
             {
-                var newSection = new DbTraceConfiguration() { DefaultTraceEventFormat = DbTraceEventFormat.Text };
+                var newSection = new DbTraceConfigurationSection() { DefaultTraceEventFormat = DbTraceEventFormat.Text };
                 return newSection;
             }
             return configSection;

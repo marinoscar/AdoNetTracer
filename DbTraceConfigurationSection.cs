@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AdoNetTracer
 {
-    public class DbTraceConfiguration : ConfigurationSection 
+    public class DbTraceConfigurationSection : ConfigurationSection 
     {
 
         [ConfigurationProperty("defaultTraceEventFormat", DefaultValue = "Text")]

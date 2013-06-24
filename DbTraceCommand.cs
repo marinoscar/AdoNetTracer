@@ -126,7 +126,6 @@ namespace AdoNetTracer
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
-            throw new Exception("ExecuteDbDataReader");
             var dbEvent = DbTraceEvent.Start(SessionId, CommandText, DbTraceOperationType.ExecuteQuery);
             var result = InternalCommand.ExecuteReader(behavior);
             DbTraceEvents.TraceEvent(dbEvent.Stop());
@@ -135,7 +134,6 @@ namespace AdoNetTracer
 
         public override int ExecuteNonQuery()
         {
-            throw new Exception("ExecuteNonQuery");
             var dbEvent = DbTraceEvent.Start(SessionId, CommandText, DbTraceOperationType.ExecuteQuery);
             var result = InternalCommand.ExecuteNonQuery();
             DbTraceEvents.TraceEvent(dbEvent.Stop());
@@ -144,7 +142,6 @@ namespace AdoNetTracer
 
         public override object ExecuteScalar()
         {
-            throw new Exception("ExecuteScalar");
             var dbEvent = DbTraceEvent.Start(SessionId, CommandText, DbTraceOperationType.ExecuteQuery);
             var result = InternalCommand.ExecuteScalar();
             DbTraceEvents.TraceEvent(dbEvent.Stop());
